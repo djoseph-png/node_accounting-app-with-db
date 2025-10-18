@@ -28,13 +28,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
       - name: Install dependencies
         run: npm install
       - name: Wait for Postgres
         run: |
           for i in {1..30}; do
-            pg_isready -h postgres -p 5432 -U postgres && break
-            sleep 1
+            pg_isready -h postgres -p 5432 -U postgres && echo "Postgres is ready!" && break
+            echo "Waiting for postgres... attempt $i"
+            sleep 2
           done
       - name: Run tests
         env:
