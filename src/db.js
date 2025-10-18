@@ -32,8 +32,50 @@ const sequelize = new Sequelize({
   dialect: 'postgres',
   port: POSTGRES_PORT || DB_PORT || 5432,
   password: POSTGRES_PASSWORD || DB_PASSWORD || 'postgres',
+  retry: {
+    max: 5,
+    match: [
+      /SequelizeConnectionError/,
+      /SequelizeConnectionRefusedError/,
+      /SequelizeHostNotFoundError/,
+      /SequelizeHostNotReachableError/,
+      /SequelizeInvalidConnectionError/,
+      /SequelizeConnectionTimedOutError/,
+      /ECONNREFUSED/,
+      /ETIMEDOUT/,
+      /EHOSTUNREACH/,
+    ],
+  },
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  logging: false,
 });
+
+// Test connection with retry logic
+async function testConnection(retries = 5, delay = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await sequelize.authenticate();
+      console.log('✅ Database connection established successfully.');
+      return true;
+    } catch (error) {
+      console.error(`❌ Attempt ${i + 1}/${retries} - Unable to connect to database:`, error.message);
+      if (i < retries - 1) {
+        console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error('❌ Failed to connect to database after all retries');
+        throw error;
+      }
+    }
+  }
+}
 
 module.exports = {
   sequelize,
+  testConnection,
 };
