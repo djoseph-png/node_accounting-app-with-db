@@ -7,58 +7,45 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     services:
       postgres:
         image: postgres:14
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: students
-        # don't map ports in Actions, container is available on localhost
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounting_app
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres -d students -h localhost -p 5432"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
-      - name: Install system deps (postgres client)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          echo "Waiting for postgres..."
-          for i in $(seq 1 60); do
-            if pg_isready -h localhost -p 5432 -U postgres -d students >/dev/null 2>&1; then
-              echo "Postgres is ready"
-              break
-            fi
-            echo "Waiting for postgres ($i/60)..."
-            sleep 1
-          done
-
       - name: Install dependencies
         run: npm install
-
-      - name: Run tests
+      - name: Run lint
+        run: npm run lint
+      - name: Run category tests
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: students
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounting_app
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-          DATABASE_URL: postgres://postgres:password@localhost:5432/students
-        run: npm test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: accounting_app
+          DB_HOST: localhost
+          DB_PORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: accounting_app
+          PGHOST: localhost
+          PGPORT: 5432
+        run: npx jest tests/category.test.js --verbose --forceExit
