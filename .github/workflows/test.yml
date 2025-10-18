@@ -58,4 +58,22 @@ jobs:
           PGDATABASE: accounting_app
           PGHOST: postgres
           PGPORT: 5432
-        run: npm test
+        run: npm run lint
+      - name: Run category tests
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounting_app
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: accounting_app
+          DB_HOST: postgres
+          DB_PORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: accounting_app
+          PGHOST: postgres
+          PGPORT: 5432
+        run: npx jest tests/category.test.js --verbose
