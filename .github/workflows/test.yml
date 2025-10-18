@@ -1,12 +1,23 @@
-name: Test
-
-on:
-  pull_request:
-    branches: [master]
-
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Make DB creds available to all steps
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: accounting_app
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: accounting_app
+      DB_HOST: postgres        # use service hostname
+      DB_PORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: accounting_app
+      PGHOST: postgres
+      PGPORT: 5432
+
     services:
       postgres:
         image: postgres:14
@@ -14,13 +25,12 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: accounting_app
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
       - uses: actions/checkout@v3
       - name: Set up Node.js
@@ -31,21 +41,11 @@ jobs:
         run: npm install
       - name: Run lint
         run: npm run lint
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h $PGHOST -p $PGPORT -U $PGUSER && break
+            sleep 1
+          done
       - name: Run category tests
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: accounting_app
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_NAME: accounting_app
-          DB_HOST: localhost
-          DB_PORT: 5432
-          PGUSER: postgres
-          PGPASSWORD: postgres
-          PGDATABASE: accounting_app
-          PGHOST: localhost
-          PGPORT: 5432
         run: npx jest tests/category.test.js --verbose --forceExit
