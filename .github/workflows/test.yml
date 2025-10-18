@@ -15,8 +15,8 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: students
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounting_app
           POSTGRES_PORT: 5432
           POSTGRES_HOST: localhost
         ports:
@@ -37,8 +37,8 @@ jobs:
       - name: Run tests
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: students
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: accounting_app
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
         run: npm test
