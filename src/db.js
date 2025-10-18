@@ -13,6 +13,11 @@ const {
   POSTGRES_USER,
   POSTGRES_PASSWORD,
   POSTGRES_DB,
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PASSWORD,
+  DB_NAME,
 } = process.env;
 
 /*
@@ -21,12 +26,12 @@ const {
 */
 
 const sequelize = new Sequelize({
-  database: POSTGRES_DB || 'postgres',
-  username: POSTGRES_USER || 'postgres',
-  host: POSTGRES_HOST || 'localhost',
+  database: POSTGRES_DB || DB_NAME || 'accounting_app',
+  username: POSTGRES_USER || DB_USER || 'postgres',
+  host: POSTGRES_HOST || DB_HOST || 'localhost',
   dialect: 'postgres',
-  port: POSTGRES_PORT || 5432,
-  password: POSTGRES_PASSWORD || '123',
+  port: POSTGRES_PORT || DB_PORT || 5432,
+  password: POSTGRES_PASSWORD || DB_PASSWORD || 'postgres',
 });
 
 module.exports = {
